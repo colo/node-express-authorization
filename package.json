@@ -1,0 +1,28 @@
+{
+  "name": "server-authorization",
+  "url": "http://github.com/colo/node-server-authorization",
+  "version": "0.0.1",
+  "description": "Server Authorization",
+  "author": {
+    "name": "Luciano Bueno",
+    "email": "glamero@gmail.com"
+  },
+  "main": "./",
+  "engines": {
+    "node": ">= 0.4.8"
+  },
+  "dependencies": {
+    "mootools": "^1.5.2"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {
+    "rbac": "0.0.1"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/MIT"
+    }
+  ],
+  "keywords": []
+}
