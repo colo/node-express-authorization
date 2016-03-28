@@ -15,22 +15,13 @@ module.exports = new Class({
 	this.app = app;
 	this.parent(rules);
 	
-	app['isAuthorized'] = function(obj){
-	  return this.isAuthorized(obj);
-	}.bind(this);
+	this.extend_app(app);
+	app.addEvent(app.ON_LOAD_APP, this.extend_app.bind(this));
 	
-	app['getSession'] = function(){
-	  return this.getSession();
-	}.bind(this);
-	
-		
 	this.addEvent(this.SET_SESSION, function(session){
 	  app.log('authorization', 'info', 'authorization session: ' + util.inspect({subject: session.getSubject().getID(), role: session.getRole().getID()}));
 	  
-	  //console.log('session.getRole');
-	  //console.log(session.getRole().getID());
-	  //console.log('session.getSubject');
-	  //console.log(session.getSubject());
+	  
 	}.bind(this));
 	
 	this.addEvent(this.IS_AUTHORIZED, function(obj){
@@ -39,9 +30,28 @@ module.exports = new Class({
 	  else
 		app.log('authorization', 'info', 'authorization : ' + util.inspect(obj));
 	}.bind(this));
+  },
+  extend_app: function(app){
 	
+	var is_auth = function(obj){
+	  return this.isAuthorized(obj);
+	}.bind(this);
 	
+	var get_session = function(){
+	  return this.getSession();
+	}.bind(this);
 	
+	if(typeof(app) == 'function'){
+		app.implement({
+			isAuthorized: is_auth,
+			getSession: get_session
+		})
+	}
+	else{
+		app['isAuthorized'] = is_auth;
+		app['getSession'] = get_session;
+	}
+	  
   },
   //express middleware
   session: function(){
