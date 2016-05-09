@@ -59,10 +59,10 @@ module.exports = new Class({
 	  
 	  this.fireEvent(this.SESSION);
 	  
-	  console.log('req.session');
-	  console.log(req.session);
-	  console.log('req.user');
-	  console.log(req.user);
+	  //console.log('req.session');
+	  //console.log(req.session);
+	  //console.log('req.user');
+	  //console.log(req.user);
 		
 	  //if(req.session.passport.user && (!this.getSession() || this.getSession().getRole().getID('anonymous'))){
 	  if(req.user && (!this.getSession() || this.getSession().getRole().getID('anonymous'))){
@@ -72,13 +72,13 @@ module.exports = new Class({
 		var session = new Session(req.user.username);
 		this.fireEvent(this.NEW_SESSION, session);
 		
-// 		console.log('roles');
-// 		console.log(this.getRoles()[req.user.role]);
+// 		//console.log('roles');
+// 		//console.log(this.getRoles()[req.user.role]);
 		
 		session.setRole(this.getRoles()[req.user.role]);
 		
- 		//console.log('subjects');
- 		//console.log(this.getRoles()[req.user.role].getSubjects());
+ 		////console.log('subjects');
+ 		////console.log(this.getRoles()[req.user.role].getSubjects());
 		
 		
 		
