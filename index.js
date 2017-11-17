@@ -11,12 +11,28 @@ module.exports = new Class({
   
   app: null,
   
+  user: null,
+  
   initialize: function(app, rules){
 		this.app = app;
 		this.parent(rules);
 		
 		this.extend_app(app);
 		app.addEvent(app.ON_LOAD_APP, this.extend_app.bind(this));
+		
+		if(app.authentication){
+			app.authentication.addEvent(app.authentication.ON_AUTH, function(err, user){
+				console.log('app.authentication.ON_AUTH');
+				
+				console.log(err);
+				console.log(user);
+				
+				//this.user = (err) ? null : user;
+				if(!err)
+					this.new_session(user.username, user.role);
+				
+			}.bind(this));
+		}
 		
 		this.addEvent(this.SET_SESSION, function(session){
 			app.log('authorization', 'info', 'authorization session: ' + util.inspect({subject: session.getSubject().getID(), role: session.getRole().getID()}));
@@ -53,43 +69,43 @@ module.exports = new Class({
 		}
 	  
   },
+  new_session: function(username, role){
+		const session = new Session(username);
+		
+		if(username !== 'anonymous' && role !== 'anonymous')
+			this.fireEvent(this.NEW_SESSION, session);
+		
+		session.setRole(this.getRoles()[role]);
+		
+		session.setSubject(this.getRoles()[role].getSubjects()[username]);
+		
+		this.setSession(session);
+	},
+	
   //express middleware
   session: function(){
 		return function session(req, res, next) {
 			
 			this.fireEvent(this.SESSION);
 			
-			//console.log('req.session');
-			//console.log(req.session);
-			//console.log('req.user');
-			//console.log(req.user);
+			console.log('req.session');
+			console.log(req.session);
+			console.log('req.user');
+			console.log(req.user);
+
 			
 			//if(req.session.passport.user && (!this.getSession() || this.getSession().getRole().getID('anonymous'))){
 			if(req.user && (!this.getSession() || this.getSession().getRole().getID('anonymous'))){
 				
-		// 		var session = new Session(req.session.passport.user);
+				this.new_session(req.user.username, req.user.role);
 				
-				var session = new Session(req.user.username);
-				this.fireEvent(this.NEW_SESSION, session);
-				
-		// 		//console.log('roles');
-		// 		//console.log(this.getRoles()[req.user.role]);
-				
-				session.setRole(this.getRoles()[req.user.role]);
-				
-				////console.log('subjects');
-				////console.log(this.getRoles()[req.user.role].getSubjects());
-				
-				
-				
-				session.setSubject(this.getRoles()[req.user.role].getSubjects()[req.user.username]);
-				this.setSession(session);
 			}
 			else {
-				var session = new Session('anonymous');
+				/*var session = new Session('anonymous');
 				session.setRole(this.getRoles()['anonymous']);
 				session.setSubject(this.getRoles()['anonymous'].getSubjects()['anonymous']);
-				this.setSession(session);
+				this.setSession(session);*/
+				this.new_session('anonymous', 'anonymous');
 			}
 			
 			return next();
