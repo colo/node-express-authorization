@@ -68,6 +68,55 @@ module.exports = new Class({
 			app['getSession'] = get_session;
 		}
 	  
+	  var check_authorization = function(req, res, next){
+			var isAuth = false;
+			
+			console.log('---check_authorization--');
+			//console.log(this.app['get']);
+			console.log(this.uuid);
+			
+			/**
+			 * las OP no deben estar declaradas en la RBAC?? por que??
+			 * alcanza con declarar la OP en "permissions"
+			 * */
+			try {
+				isAuth = this.isAuthorized({ op: arguments[0].method.toLowerCase(), res: this.uuid})
+
+				if (isAuth === false) {
+					this['403'](req, res, next, {
+						error: 'You are not authorized to operation: '+arguments[0].method.toLowerCase()+
+						', on resource: '+this.uuid
+					});
+					
+				}
+				else{
+					//console.log('authenticated');
+					next();
+				}
+
+			}
+			catch(e){
+				//console.log(e.message);
+				this.log('authorization', 'error', 'authorization : ' + e.message);
+				this['500'](req, res, next, { error: e.message });
+			}
+			
+				
+		};
+		
+		
+		
+		//implements a check_authentication function on the App, only if the App doens't implement one
+		if(!app.check_authorization){
+			if(typeof(app) == 'function'){
+				app.implement({
+					check_authorization: check_authorization
+				});
+			}
+			else{
+				app['check_authorization'] = check_authorization;
+			}
+		}
   },
   new_session: function(username, role){
 		const session = new Session(username);
