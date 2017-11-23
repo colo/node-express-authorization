@@ -72,20 +72,23 @@ module.exports = new Class({
 			var isAuth = false;
 			
 			console.log('---check_authorization--');
-			//console.log(this.app['get']);
-			console.log(this.uuid);
+			console.log(this.authorization.getRules());
+			console.log(req.method);
+			console.log(this.uuid +'_'+req.route.path);
+			
+			console.log();
 			
 			/**
 			 * las OP no deben estar declaradas en la RBAC?? por que??
 			 * alcanza con declarar la OP en "permissions"
 			 * */
 			try {
-				isAuth = this.isAuthorized({ op: arguments[0].method.toLowerCase(), res: this.uuid})
+				isAuth = this.isAuthorized({ op: req.method.toLowerCase(), res: this.uuid +'_'+req.route.path})
 
 				if (isAuth === false) {
 					this['403'](req, res, next, {
-						error: 'You are not authorized to operation: '+arguments[0].method.toLowerCase()+
-						', on resource: '+this.uuid
+						error: 'You are not authorized to operation: '+req.method.toLowerCase()+
+						', on resource: '+this.uuid +'_'+req.route.path
 					});
 					
 				}
@@ -106,7 +109,7 @@ module.exports = new Class({
 		
 		
 		
-		//implements a check_authentication function on the App, only if the App doens't implement one
+		//implements a check_authorization function on the App, only if the App doens't implement one
 		if(!app.check_authorization){
 			if(typeof(app) == 'function'){
 				app.implement({
@@ -123,6 +126,16 @@ module.exports = new Class({
 		
 		if(username !== 'anonymous' && role !== 'anonymous')
 			this.fireEvent(this.NEW_SESSION, session);
+		
+		
+		/**
+		 * el problema es que la sub app no tendría que usar la "session", ya está inicializada;
+		 * pero entonces como hace el "check" (isAuthorized)?? 
+		 * a resolver; q las subapps no inicien session y cequeen contra la rbac de la APP padre;
+		 * o que inicien session y tengan la RBAC del padre + la suya?? (me gusta más)
+		 * */
+		//console.log('--ROLE---')
+		//console.log(this.getRoles());
 		
 		session.setRole(this.getRoles()[role]);
 		
