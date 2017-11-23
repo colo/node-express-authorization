@@ -35,6 +35,8 @@ module.exports = new Class({
 		}
 		
 		this.addEvent(this.SET_SESSION, function(session){
+			console.log(session);
+			
 			app.log('authorization', 'info', 'authorization session: ' + util.inspect({subject: session.getSubject().getID(), role: session.getRole().getID()}));
 			
 			
@@ -71,12 +73,17 @@ module.exports = new Class({
 	  var check_authorization = function(req, res, next){
 			var isAuth = false;
 			
+			if(req.user && (req.user.role != this.getSession().getRole().getID())){
+				this.authorization.new_session(req.user.username, req.user.role);
+			}
+			
 			console.log('---check_authorization--');
-			console.log(this.authorization.getRules());
+			console.log(this.authorization.getSession().getRole().getID());
+			console.log(this.getSession().getRole().getID());
 			console.log(req.method);
 			console.log(this.uuid +'_'+req.route.path);
 			
-			console.log();
+			
 			
 			/**
 			 * las OP no deben estar declaradas en la RBAC?? por que??
@@ -122,26 +129,36 @@ module.exports = new Class({
 		}
   },
   new_session: function(username, role){
+		console.log('---new_session----');
+		console.log(username);
+		console.log(role);
+		
 		const session = new Session(username);
 		
 		if(username !== 'anonymous' && role !== 'anonymous')
 			this.fireEvent(this.NEW_SESSION, session);
-		
-		
+			
 		/**
 		 * el problema es que la sub app no tendría que usar la "session", ya está inicializada;
 		 * pero entonces como hace el "check" (isAuthorized)?? 
 		 * a resolver; q las subapps no inicien session y cequeen contra la rbac de la APP padre;
 		 * o que inicien session y tengan la RBAC del padre + la suya?? (me gusta más)
 		 * */
-		//console.log('--ROLE---')
-		//console.log(this.getRoles());
+		console.log('--ROLE---')
+		console.log(this.getRoles()[role].getSubjects());
 		
 		session.setRole(this.getRoles()[role]);
 		
 		session.setSubject(this.getRoles()[role].getSubjects()[username]);
 		
+		
+			
+		console.log('--ROLE---')
+		console.log(session.getRole().getID());
+		
 		this.setSession(session);
+		
+		
 	},
 	
   //express middleware
@@ -154,21 +171,26 @@ module.exports = new Class({
 			console.log(req.session);
 			console.log('req.user');
 			console.log(req.user);
-
+			
+			const username = (req.user) ? req.user.username : 'anonymous'
+			const role = (req.user) ? req.user.role : 'anonymous'
+			
+			this.new_session(username, role);
 			
 			//if(req.session.passport.user && (!this.getSession() || this.getSession().getRole().getID('anonymous'))){
-			if(req.user && (!this.getSession() || this.getSession().getRole().getID('anonymous'))){
+			
+			//if(req.user && (!this.getSession() || this.getSession().getRole().getID('anonymous'))){
 				
-				this.new_session(req.user.username, req.user.role);
+				//this.new_session(req.user.username, req.user.role);
 				
-			}
-			else {
-				/*var session = new Session('anonymous');
-				session.setRole(this.getRoles()['anonymous']);
-				session.setSubject(this.getRoles()['anonymous'].getSubjects()['anonymous']);
-				this.setSession(session);*/
-				this.new_session('anonymous', 'anonymous');
-			}
+			//}
+			//else if( !req.user && !this.getSession() ){
+				///*var session = new Session('anonymous');
+				//session.setRole(this.getRoles()['anonymous']);
+				//session.setSubject(this.getRoles()['anonymous'].getSubjects()['anonymous']);
+				//this.setSession(session);*/
+				//this.new_session('anonymous', 'anonymous');
+			//}
 			
 			return next();
 		}.bind(this);
