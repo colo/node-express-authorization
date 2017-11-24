@@ -23,10 +23,10 @@ module.exports = new Class({
 		
 		if(app.authentication){
 			app.authentication.addEvent(app.authentication.ON_AUTH, function(err, user){
-				console.log('app.authentication.ON_AUTH');
+				//console.log('app.authentication.ON_AUTH');
 				
-				console.log(err);
-				console.log(user);
+				//console.log(err);
+				//console.log(user);
 				
 				//this.user = (err) ? null : user;
 				if(!err)
@@ -36,7 +36,7 @@ module.exports = new Class({
 		}
 		
 		this.addEvent(this.SET_SESSION, function(session){
-			console.log('---this.SET_SESSION----');
+			//console.log('---this.SET_SESSION----');
 			//console.log(session.getSubject());
 			//console.log(session.getRole());
 			
@@ -80,11 +80,11 @@ module.exports = new Class({
 				this.authorization.new_session(req.user.username, req.user.role);
 			}
 			
-			console.log('---check_authorization--');
-			console.log(this.authorization.getSession().getRole().getID());
-			console.log(this.authorization.getSession().getSubject().getID());
-			console.log(req.method);
-			console.log(this.uuid +'_'+req.route.path);
+			//console.log('---check_authorization--');
+			//console.log(this.authorization.getSession().getRole().getID());
+			//console.log(this.authorization.getSession().getSubject().getID());
+			//console.log(req.method);
+			//console.log(this.uuid +'_'+req.route.path);
 			
 			
 			
@@ -103,13 +103,13 @@ module.exports = new Class({
 					
 				}
 				else{
-					//console.log('authenticated');
+					////console.log('authenticated');
 					next();
 				}
 
 			}
 			catch(e){
-				//console.log(e.message);
+				////console.log(e.message);
 				this.log('authorization', 'error', 'authorization : ' + e.message);
 				this['500'](req, res, next, { error: e.message });
 			}
@@ -132,9 +132,9 @@ module.exports = new Class({
 		}
   },
   new_session: function(username, role){
-		console.log('---new_session----');
-		console.log(username);
-		console.log(role);
+		//console.log('---new_session----');
+		//console.log(username);
+		//console.log(role);
 		
 		const session = new Session(username);
 		
@@ -144,11 +144,15 @@ module.exports = new Class({
 		 * a resolver; q las subapps no inicien session y cequeen contra la rbac de la APP padre;
 		 * o que inicien session y tengan la RBAC del padre + la suya?? (me gusta más)
 		 * */
-		console.log('--ROLE---')
-		if(Object.getLength(this.getRoles()[role].getSubjects()) == 0)
+		//console.log('--ROLE---')
+		if(
+			Object.getLength(this.getRoles()[role].getSubjects()) == 0 || 
+			!this.getRoles()[role].getSubjects()[username]
+		){
 			this.getRoles()[role].addSubject(new Subject(username))
+		}
 		
-		console.log(this.getRoles()[role].getSubjects());
+		//console.log(this.getRoles()[role].getSubjects());
 		
 		session.setRole(this.getRoles()[role]);
 		
@@ -157,8 +161,8 @@ module.exports = new Class({
 		if(username !== 'anonymous' && role !== 'anonymous')
 			this.fireEvent(this.NEW_SESSION, session);
 			
-		console.log('--ROLE---')
-		console.log(session.getRole().getID());
+		//console.log('--ROLE---')
+		//console.log(session.getRole().getID());
 		
 		this.setSession(session);
 		
@@ -171,10 +175,10 @@ module.exports = new Class({
 			
 			this.fireEvent(this.SESSION);
 			
-			console.log('req.session');
-			console.log(req.session);
-			console.log('req.user');
-			console.log(req.user);
+			//console.log('req.session');
+			//console.log(req.session);
+			//console.log('req.user');
+			//console.log(req.user);
 			
 			const username = (req.user) ? req.user.username : 'anonymous'
 			const role = (req.user) ? req.user.role : 'anonymous'
