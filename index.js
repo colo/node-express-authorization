@@ -1,7 +1,8 @@
 var mootools = require ('mootools'),
 	util = require ('util'),
-	Rbac = require('rbac').Rbac,
-	Session = require('rbac').Session;
+	Rbac = require('node-rbac').Rbac,
+	Session = require('node-rbac').Session,
+	Subject = require('node-rbac').Subject;
 
 module.exports = new Class({
   Extends: Rbac,
@@ -35,7 +36,9 @@ module.exports = new Class({
 		}
 		
 		this.addEvent(this.SET_SESSION, function(session){
-			console.log(session);
+			console.log('---this.SET_SESSION----');
+			//console.log(session.getSubject());
+			//console.log(session.getRole());
 			
 			app.log('authorization', 'info', 'authorization session: ' + util.inspect({subject: session.getSubject().getID(), role: session.getRole().getID()}));
 			
@@ -79,7 +82,7 @@ module.exports = new Class({
 			
 			console.log('---check_authorization--');
 			console.log(this.authorization.getSession().getRole().getID());
-			console.log(this.getSession().getRole().getID());
+			console.log(this.authorization.getSession().getSubject().getID());
 			console.log(req.method);
 			console.log(this.uuid +'_'+req.route.path);
 			
@@ -135,9 +138,6 @@ module.exports = new Class({
 		
 		const session = new Session(username);
 		
-		if(username !== 'anonymous' && role !== 'anonymous')
-			this.fireEvent(this.NEW_SESSION, session);
-			
 		/**
 		 * el problema es que la sub app no tendría que usar la "session", ya está inicializada;
 		 * pero entonces como hace el "check" (isAuthorized)?? 
@@ -145,13 +145,17 @@ module.exports = new Class({
 		 * o que inicien session y tengan la RBAC del padre + la suya?? (me gusta más)
 		 * */
 		console.log('--ROLE---')
+		if(Object.getLength(this.getRoles()[role].getSubjects()) == 0)
+			this.getRoles()[role].addSubject(new Subject(username))
+		
 		console.log(this.getRoles()[role].getSubjects());
 		
 		session.setRole(this.getRoles()[role]);
 		
 		session.setSubject(this.getRoles()[role].getSubjects()[username]);
 		
-		
+		if(username !== 'anonymous' && role !== 'anonymous')
+			this.fireEvent(this.NEW_SESSION, session);
 			
 		console.log('--ROLE---')
 		console.log(session.getRole().getID());
