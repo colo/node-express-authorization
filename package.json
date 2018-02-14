@@ -1,5 +1,5 @@
 {
-  "name": "server-authorization",
+  "name": "node-express-authorization",
   "url": "http://github.com/colo/node-server-authorization",
   "version": "0.0.1",
   "description": "Server Authorization",
@@ -12,12 +12,10 @@
     "node": ">= 0.4.8"
   },
   "dependencies": {
-    "mootools": "^1.5.2"
+    "mootools": "^1.5.2",
+    "node-rbac": "git+https://github.com/colo/node-rbac.git"
   },
   "devDependencies": {},
-  "optionalDependencies": {
-    "rbac": "0.0.1"
-  },
   "licenses": [
     {
       "type": "MIT",
