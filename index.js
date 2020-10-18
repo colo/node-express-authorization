@@ -81,7 +81,7 @@ module.exports = new Class({
 			// debug('check_authorization', socket.handshake.session) //socket.handshake.session,
 
 			let session = (socket) ? socket.handshake.session : req.session
-			debug('check_authorization', session) //socket.handshake.session,
+
 
 			var isAuth = false;
 
@@ -99,10 +99,11 @@ module.exports = new Class({
 			 * las OP no deben estar declaradas en la RBAC?? por que??
 			 * alcanza con declarar la OP en "permissions"
 			 * */
+			 debug('check_authorization', session, this.getSession()) //socket.handshake.session,
 			 if(!session.user || !this.getSession()){
 				 this.log('authorization', 'error', 'authorization : No current session');
 				 if(req){
-					 this['500'](req, res, next, { error: 'No current session' });
+					 this['500'](req, resp, next, { error: 'No current session' });
 				 }
 				 else{
 					 socket.emit(
@@ -123,7 +124,7 @@ module.exports = new Class({
 		 				isAuth = this.isAuthorized({ op: req.method.toLowerCase(), res: this.uuid +'_'+req.route.path})
 
 		 				if (isAuth === false) {
-		 					this['403'](req, res, next, {
+		 					this['403'](req, resp, next, {
 		 						error: 'You are not authorized to operation: '+req.method.toLowerCase()+
 		 						', on resource: '+this.uuid +'_'+req.route.path
 		 					});
@@ -138,7 +139,7 @@ module.exports = new Class({
 		 			catch(e){
 		 				//////console.log(e.message);
 		 				this.log('authorization', 'error', 'authorization : ' + e.message);
-		 				this['500'](req, res, next, { error: e.message });
+		 				this['500'](req, resp, next, { error: e.message });
 		 			}
 				 }
 				 else{
