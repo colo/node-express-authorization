@@ -103,7 +103,8 @@ module.exports = new Class({
 			 if(!session.user || !this.getSession()){
 				 this.log('authorization', 'error', 'authorization : No current session');
 				 if(req){
-					 this['500'](req, resp, next, { error: 'No current session' });
+					 // this['500'](req, resp, next, { error: 'No current session' });
+					 next()
 				 }
 				 else{
 					 socket.emit(
